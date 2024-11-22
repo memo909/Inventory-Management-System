@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Inventory Management</title>
+
+    <!-- Include Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Include Custom Styles -->
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+
+    <style>
+        .toast-container {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -20%);
+            z-index: 1050; /* Ensure it appears above other content */
+        }
+
+        /* Enhance navbar styling */
+        .navbar-custom {
+            background: linear-gradient(to right, #6c9db0, #036b94);
+        }
+
+        .navbar-brand {
+            color: white !important;
+        }
+
+        .navbar-light .navbar-nav .nav-link {
+            color: white !important;
+        }
+
+        .dropdown-menu {
+            box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card-custom {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body class="bg-light-subtle">
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <nav class="navbar navbar-expand-lg navbar-custom shadow-sm">
+            @* Toast Messages for Success/Failure *@
+            @if (TempData["success"] != null)
+            {
+                <div class="toast-container">
+                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <small>@DateTime.Now</small>
+                            <button type="button" class="btn-close ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            @TempData["success"]
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (TempData["fail"] != null)
+            {
+                <div class="toast-container">
+                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <small>@DateTime.Now</small>
+                            <button type="button" class="btn-close ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            @TempData["fail"]
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="container-fluid px-5">
+                <a class="navbar-brand" href="/">Dashboard</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        @* User Account Dropdown *@
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@User.Identity.Name</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" asp-action="SignOut" asp-controller="Account">Sign out</a>
+                                </div>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Account</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" asp-action="Login" asp-controller="Account">Login</a>
+                                    <a class="dropdown-item" asp-action="Register" asp-controller="Account">Register</a>
+                                </div>
+                            </li>
+                        }
+
+                        @* Navigation Menus *@
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Product</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" asp-action="Index" asp-controller="Product">All Products</a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Product">Add Product</a>
+                                }
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Categories</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" asp-action="Index" asp-controller="Category">All Categories</a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Category">Add Category</a>
+                                }
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Suppliers</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" asp-action="Index" asp-controller="Supplier">All Suppliers</a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Supplier">Add Supplier</a>
+                                }
+                            </div>
+                        </li>
+
+                        @* Admin Section *@
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Admin</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" asp-action="Role" asp-controller="Account">Add Role</a>
+                                    <a class="dropdown-item" asp-action="ShowUsers" asp-controller="UserManagement">Manage Users</a>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    }
+
+    <div class="container mt-4">
+        <div class="card card-custom shadow-lg mb-4">
+            <div class="card-header bg-white">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+
+</html>
